@@ -1,0 +1,41 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp3.0</TargetFramework>
+    <UserSecretsId>dotnet-AuraConnect-E76FA53B-F40C-451C-A4D8-6E09BF553310</UserSecretsId>
+    <Version>1.0.0.0</Version>
+    <Authors>ASUSTeK Computer Inc.</Authors>
+    <Company />
+    <ApplicationIcon>Icon.ico</ApplicationIcon>
+    <OutputType>WinExe</OutputType>
+    <StartupObject />
+    <Product>Aura Connect</Product>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>../bin/Debug/</OutputPath>
+    <PlatformTarget>x86</PlatformTarget>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>../bin/Release/</OutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="3.0.0-preview9.19423.4" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="3.0.0-preview9.19423.4" />
+    <PackageReference Include="Microsoft.Extensions.Logging.EventLog" Version="3.0.0-preview9.19423.4" />
+    <PackageReference Include="RzChromaBroadcastAPI.NET" Version="1.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AuraConnect.Core\AuraConnect.Core.csproj" />
+    <ProjectReference Include="..\AuraConnect.Providers.Asus\AuraConnect.Providers.Asus.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="Icon.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+</Project>
