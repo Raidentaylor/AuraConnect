@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using System.Collections.Generic;
+using System.Timers;
 
 namespace AuraConnect.Core
 {
@@ -19,11 +20,18 @@ namespace AuraConnect.Core
         private List<IDeviceProvider> _deviceProviders;
 
         /// <summary>
+        /// The health check timer
+        /// </summary>
+        private Timer _healthCheckTimer;
+
+        /// <summary>
         /// Creates a instance of the Aura Connect service
         /// </summary>
         public AuraConnectService()
         {
             _deviceProviders = new List<IDeviceProvider>();
+            _healthCheckTimer = new Timer(15000);
+            _healthCheckTimer.Elapsed += HealthCheckTimer_Elapsed;
         }
 
         /// <summary>
@@ -56,6 +64,24 @@ namespace AuraConnect.Core
                         }
                     }
                 }
+
+                provider.RequestControl();
+            }
+
+            _healthCheckTimer.Start();
+        }
+
+        /// <summary>
+        /// Occurs during a health check cycle
+        /// </summary>
+        /// <param name="sender">The sending object</param>
+        /// <param name="e">The arguments</param>
+        private void HealthCheckTimer_Elapsed(object sender, ElapsedEventArgs e)
+        {
+            foreach (var provider in DeviceProviders)
+            {
+                provider.PerformHealthCheck();
+                provider.RequestControl();
             }
         }
     }

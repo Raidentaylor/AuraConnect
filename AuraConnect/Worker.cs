@@ -1,5 +1,4 @@
 using System;
-using System.Timers;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
@@ -30,11 +29,6 @@ namespace AuraConnect
         private readonly RzChromaBroadcastAPI _api;
 
         /// <summary>
-        /// The health check timer
-        /// </summary>
-        private System.Timers.Timer _healthCheckTimer;
-
-        /// <summary>
         /// Creates the worker
         /// </summary>
         /// <param name="logger">The logger</param>
@@ -46,8 +40,7 @@ namespace AuraConnect
             _api = new RzChromaBroadcastAPI();
             _api.ConnectionChanged += Api_ConnectionChanged;
             _api.ColorChanged += Api_ColorChanged;
-            _healthCheckTimer = new System.Timers.Timer(15000);
-            _healthCheckTimer.Elapsed += HealthCheckTimer_Elapsed;
+            
         }
 
         /// <summary>
@@ -57,33 +50,22 @@ namespace AuraConnect
         /// <returns>A task</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            await Task.Delay(1, stoppingToken);
+            await Task.Delay(1000, stoppingToken);
+
+            _logger.LogInformation("Initializing Aura Connect...");
+
+            await Task.Delay(1000, stoppingToken);
 
             _auraConnect.Initialize();
 
             _api.Init(Guid.Parse("e6bef332-95b8-76ec-a6d0-9f402bad244c"));
 
-            foreach (var provider in _auraConnect.DeviceProviders)
-            {
-                provider.RequestControl();
-
-                foreach (var device in provider.Devices)
-                {
-                    _logger.LogInformation("Device Found: " + provider.Name + " - " + device.Name);
-                }
-            }
-
-            _healthCheckTimer.Start();
-
-            _logger.LogInformation("Aura Connect started successfully...");
+            _logger.LogInformation("Aura Connect started successfully!");
 
             while (!stoppingToken.IsCancellationRequested)
             {
                 await Task.Delay(1000, stoppingToken);
             }
-
-            _api.UnInit();
-            _healthCheckTimer.Stop();
         }
 
         /// <summary>
@@ -120,20 +102,6 @@ namespace AuraConnect
 
                     device.ApplyLights();
                 }
-            }
-        }
-
-        /// <summary>
-        /// Occurs during a health check cycle
-        /// </summary>
-        /// <param name="sender">The sending object</param>
-        /// <param name="e">The arguments</param>
-        private void HealthCheckTimer_Elapsed(object sender, ElapsedEventArgs e)
-        {
-            foreach (var provider in _auraConnect.DeviceProviders)
-            {
-                provider.PerformHealthCheck();
-                provider.RequestControl();
             }
         }
     }

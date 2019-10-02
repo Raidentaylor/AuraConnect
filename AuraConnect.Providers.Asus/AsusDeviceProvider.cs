@@ -73,6 +73,16 @@ namespace AuraConnect.Providers.Asus
                 Thread.Sleep(1000);
                 lightingServiceRunning = Process.GetProcessesByName("LightingService").Length != 0;
             }
+
+            var comServiceRunning = Process.GetProcessesByName("atkexComSvc").Length != 0;
+
+            while (!comServiceRunning)
+            {
+                Thread.Sleep(1000);
+                comServiceRunning = Process.GetProcessesByName("atkexComSvc").Length != 0;
+            }
+
+            Thread.Sleep(60000);
         }
 
         /// <summary>
