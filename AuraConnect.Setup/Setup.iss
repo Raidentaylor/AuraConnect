@@ -1,6 +1,6 @@
 [Setup]
 AppName=AURA Connect
-AppVersion=1.0.0.0
+AppVersion=1.0.0.1
 WizardStyle=modern
 DefaultDirName={autopf32}\ASUS\AURACONNECT
 DefaultGroupName=AURA Connect
