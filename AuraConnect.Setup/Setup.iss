@@ -19,6 +19,7 @@ Source: "..\bin\Release\netcoreapp3.0\publish\**"; DestDir: "{app}"; Flags: recu
 
 [Run]
 Filename: "{sys}\sc.exe"; Parameters: "create AuraConnect start=auto binpath=""{app}\AuraConnect.exe"""; StatusMsg: "Installing AURA Connect Service..."; Flags: runhidden
+Filename: "{sys}\sc.exe"; Parameters: "sc config AuraConnect depend=asComSvc/LightingService"; StatusMsg: "Configuring AURA Connect Service..."; Flags: runhidden
 Filename: "{sys}\sc.exe"; Parameters: "start AuraConnect"; StatusMsg: "Starting AURA Connect Service..."; Flags: runhidden
 
 [UninstallRun]

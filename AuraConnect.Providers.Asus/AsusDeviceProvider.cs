@@ -82,7 +82,7 @@ namespace AuraConnect.Providers.Asus
                 comServiceRunning = Process.GetProcessesByName("atkexComSvc").Length != 0;
             }
 
-            Thread.Sleep(60000);
+            Thread.Sleep(30000);
         }
 
         /// <summary>
