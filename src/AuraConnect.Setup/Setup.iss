@@ -1,6 +1,6 @@
 [Setup]
 AppName=AURA Connect
-AppVersion=1.0.0.1
+AppVersion=1.0.1
 WizardStyle=modern
 DefaultDirName={autopf32}\ASUS\AURACONNECT
 DefaultGroupName=AURA Connect
@@ -15,7 +15,7 @@ CloseApplications=force
 AppPublisher=ASUSTeK Computer Inc.
 
 [Files]
-Source: "..\bin\Release\netcoreapp3.0\publish\**"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
+Source: "..\bin\Release\netcoreapp3.1\win-x86\publish\**"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
 
 [Run]
 Filename: "{sys}\sc.exe"; Parameters: "create AuraConnect start=auto binpath=""{app}\AuraConnect.exe"""; StatusMsg: "Installing AURA Connect Service..."; Flags: runhidden

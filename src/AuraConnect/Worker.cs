@@ -1,15 +1,16 @@
 using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Razer.Chroma.Broadcast;
-using AuraConnect.Core;
+using RGBKit.Core;
 
 namespace AuraConnect
 {
     /// <summary>
-    /// The aura connect worker
+    /// The Aura Connect worker
     /// </summary>
     public class Worker : BackgroundService
     {
@@ -19,12 +20,12 @@ namespace AuraConnect
         private readonly ILogger<Worker> _logger;
 
         /// <summary>
-        /// The aura connect service
+        /// The RGB Kit service
         /// </summary>
-        private readonly IAuraConnectService _auraConnect;
+        private readonly IRGBKitService _rgbKit;
 
         /// <summary>
-        /// The razer broadcast api
+        /// The Razer Broadcast API
         /// </summary>
         private readonly RzChromaBroadcastAPI _api;
 
@@ -32,15 +33,14 @@ namespace AuraConnect
         /// Creates the worker
         /// </summary>
         /// <param name="logger">The logger</param>
-        /// <param name="auraConnect">The aura connect service</param>
-        public Worker(ILogger<Worker> logger, IAuraConnectService auraConnect)
+        /// <param name="rgbKit">The RGB Kit service</param>
+        public Worker(ILogger<Worker> logger, IRGBKitService rgbKit)
         {
             _logger = logger;
-            _auraConnect = auraConnect;
+            _rgbKit = rgbKit;
             _api = new RzChromaBroadcastAPI();
             _api.ConnectionChanged += Api_ConnectionChanged;
             _api.ColorChanged += Api_ColorChanged;
-            
         }
 
         /// <summary>
@@ -56,9 +56,17 @@ namespace AuraConnect
 
             await Task.Delay(1000, stoppingToken);
 
-            _auraConnect.Initialize();
+            _rgbKit.Initialize();
 
             _api.Init(Guid.Parse("e6bef332-95b8-76ec-a6d0-9f402bad244c"));
+
+            foreach (var deviceProvider in _rgbKit.DeviceProviders)
+            {
+                foreach (var device in deviceProvider.Devices)
+                {
+                    _logger.LogInformation($"Found Device: {deviceProvider.Name} - {device.Name} - {device.Lights.Count()} Lights");
+                }
+            }
 
             _logger.LogInformation("Aura Connect started successfully!");
 
@@ -87,7 +95,7 @@ namespace AuraConnect
         {
             var currentColor = 0;
 
-            foreach (var deviceProvider in _auraConnect.DeviceProviders)
+            foreach (var deviceProvider in _rgbKit.DeviceProviders)
             {
                 foreach (var device in deviceProvider.Devices)
                 {

@@ -1,15 +1,17 @@
+using System;
+using System.IO;
 using System.Diagnostics;
 using System.Threading;
 using System.Runtime.InteropServices;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using AuraConnect.Core;
+using RGBKit.Core;
 
 namespace AuraConnect
 {
     /// <summary>
-    /// The aura connect service program
+    /// The Aura Connect service program
     /// </summary>
     public class Program
     {
@@ -17,7 +19,7 @@ namespace AuraConnect
         /// Allocates a console window
         /// </summary>
         [DllImport("kernel32")]
-        public static extern void AllocConsole();
+        private static extern void AllocConsole();
 
         /// <summary>
         /// The program entry point
@@ -47,17 +49,23 @@ namespace AuraConnect
         /// <returns>The host builder</returns>
         public static IHostBuilder CreateHostBuilder(string[] args)
         {
+            var logFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "AuraConnect\\logs");
+
+            if (!Directory.Exists(logFolder))
+                Directory.CreateDirectory(logFolder);
+
             return Host.CreateDefaultBuilder(args)
                 .UseWindowsService()
-                .ConfigureAuraConnect(auraConnect =>
+                .ConfigureRGBKit(rgbKit =>
                 {
-                    auraConnect.UseAsus();
+                    rgbKit.UseAura();
                 })
                 .ConfigureLogging((hostingContext, logging) =>
                 {
                     logging.AddEventLog();
+                    logging.AddFile(Path.Combine(logFolder, $"AuraConnect.log"), append: true);
                 })
-                .ConfigureServices(services =>
+                .ConfigureServices((hostContext, services) =>
                 {
                     services.AddHostedService<Worker>();
                 });
