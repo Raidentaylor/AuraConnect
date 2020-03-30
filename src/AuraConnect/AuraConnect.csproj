@@ -3,11 +3,15 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>dotnet-AuraConnect-E76FA53B-F40C-451C-A4D8-6E09BF553310</UserSecretsId>
-    <Version>1.0.1</Version>
+    <Version>1.0.2</Version>
     <Authors>ASUSTeK Computer Inc.</Authors>
     <Company>ASUSTeK Computer Inc.</Company>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
     <Product>Aura Connect</Product>
+    <PublishTrimmed>true</PublishTrimmed>
+    <PublishReadyToRun>true</PublishReadyToRun>
+    <RuntimeIdentifier>win-x86</RuntimeIdentifier>
+    <OutputType>Exe</OutputType>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -34,5 +38,9 @@
     <None Update="Icon.ico">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+  </ItemGroup>
+
+  <ItemGroup>
+    <PublishReadyToRunExclude Include="System.Security.Principal.Windows.dll" />
   </ItemGroup>
 </Project>
