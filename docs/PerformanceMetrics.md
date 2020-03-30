@@ -1,8 +1,6 @@
 # Performance Metrics
 
-<aside class="warning">
 WARNING: Enabling performance metrics can use a lot of disk space if you are not careful. Around 1MB every 2 minutes. Turn this off when not needed.
-</aside>
 
 AuraConnect can log performance metrics for debugging purposes.
 
