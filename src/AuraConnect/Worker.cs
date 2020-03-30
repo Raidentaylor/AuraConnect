@@ -1,7 +1,9 @@
 using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Razer.Chroma.Broadcast;
@@ -20,6 +22,11 @@ namespace AuraConnect
         private readonly ILogger<Worker> _logger;
 
         /// <summary>
+        /// The configuration
+        /// </summary>
+        private readonly IConfiguration _configuration;
+
+        /// <summary>
         /// The RGB Kit service
         /// </summary>
         private readonly IRGBKitService _rgbKit;
@@ -30,17 +37,31 @@ namespace AuraConnect
         private readonly RzChromaBroadcastAPI _api;
 
         /// <summary>
+        /// If performance metrics are enabled
+        /// </summary>
+        private readonly bool _performanceMetricsEnabled;
+
+        /// <summary>
+        /// The performance metrics stopwatch
+        /// </summary>
+        private readonly Stopwatch _performanceMetricsStopwatch;
+
+        /// <summary>
         /// Creates the worker
         /// </summary>
         /// <param name="logger">The logger</param>
+        /// <param name="configuration">The configuration</param>
         /// <param name="rgbKit">The RGB Kit service</param>
-        public Worker(ILogger<Worker> logger, IRGBKitService rgbKit)
+        public Worker(ILogger<Worker> logger, IConfiguration configuration, IRGBKitService rgbKit)
         {
             _logger = logger;
+            _configuration = configuration;
             _rgbKit = rgbKit;
             _api = new RzChromaBroadcastAPI();
             _api.ConnectionChanged += Api_ConnectionChanged;
             _api.ColorChanged += Api_ColorChanged;
+            _performanceMetricsEnabled = (bool)_configuration.GetValue(typeof(bool), "PerformanceMetricsEnabled");
+            _performanceMetricsStopwatch = new Stopwatch();
         }
 
         /// <summary>
@@ -52,7 +73,7 @@ namespace AuraConnect
         {
             await Task.Delay(1000, stoppingToken);
 
-            _logger.LogInformation("Initializing Aura Connect...");
+            _logger.LogInformation(new EventId(0, "Logging"), "Initializing Aura Connect...");
 
             await Task.Delay(1000, stoppingToken);
 
@@ -64,11 +85,11 @@ namespace AuraConnect
             {
                 foreach (var device in deviceProvider.Devices)
                 {
-                    _logger.LogInformation($"Found Device: {deviceProvider.Name} - {device.Name} - {device.Lights.Count()} Lights");
+                    _logger.LogInformation(new EventId(0, "Logging"), $"Found Device: {deviceProvider.Name} - {device.Name} - {device.Lights.Count()} Lights");
                 }
             }
 
-            _logger.LogInformation("Aura Connect started successfully!");
+            _logger.LogInformation(new EventId(0, "Logging"), "Aura Connect started successfully!");
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -83,7 +104,7 @@ namespace AuraConnect
         /// <param name="e">The arguments</param>
         private void Api_ConnectionChanged(object sender, RzChromaBroadcastConnectionChangedEventArgs e)
         {
-            _logger.LogInformation(e.Connected ? "Razer Chroma Broadcast API connected" : "Razer Chroma Broadcast API disconnected");
+            _logger.LogInformation(new EventId(0, "Logging"), e.Connected ? "Razer Chroma Broadcast API connected" : "Razer Chroma Broadcast API disconnected");
         }
 
         /// <summary>
@@ -108,7 +129,19 @@ namespace AuraConnect
                             currentColor = 0;
                     }
 
+                    if (_performanceMetricsEnabled)
+                    {
+                        _performanceMetricsStopwatch.Reset();
+                        _performanceMetricsStopwatch.Start();
+                    }
+
                     device.ApplyLights();
+
+                    if (_performanceMetricsEnabled)
+                    {
+                        _performanceMetricsStopwatch.Stop();
+                        _logger.LogInformation(new EventId(1, "Metrics"), deviceProvider.Name + " - " + device.Name + ": Took " + _performanceMetricsStopwatch.ElapsedMilliseconds + "ms To Update");
+                    }
                 }
             }
         }
