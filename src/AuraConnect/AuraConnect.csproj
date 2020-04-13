@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
     <UserSecretsId>dotnet-AuraConnect-E76FA53B-F40C-451C-A4D8-6E09BF553310</UserSecretsId>
-    <Version>1.0.3</Version>
+    <Version>1.1.0</Version>
     <Authors>ASUSTeK Computer Inc.</Authors>
     <Company>ASUSTeK Computer Inc.</Company>
     <ApplicationIcon>Icon.ico</ApplicationIcon>

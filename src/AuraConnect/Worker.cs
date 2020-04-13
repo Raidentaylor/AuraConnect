@@ -135,7 +135,10 @@ namespace AuraConnect
                         _performanceMetricsStopwatch.Start();
                     }
 
-                    device.ApplyLights();
+                    if (device.Lights.Count() > 0)
+                    {
+                        device.ApplyLights();
+                    }
 
                     if (_performanceMetricsEnabled)
                     {
