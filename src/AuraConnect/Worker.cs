@@ -46,9 +46,10 @@ namespace AuraConnect
         /// </summary>
         private readonly Stopwatch _performanceMetricsStopwatch;
 
-        private readonly string _ReadIgnoreDevices;
-
-        private string[] _IgnoreDevices;
+        /// <summary>
+        /// The devices to be ignored
+        /// </summary>
+        private readonly string[] _ignoredDevices;
 
         /// <summary>
         /// Creates the worker
@@ -65,19 +66,8 @@ namespace AuraConnect
             _api.ConnectionChanged += Api_ConnectionChanged;
             _api.ColorChanged += Api_ColorChanged;
             _performanceMetricsEnabled = (bool)_configuration.GetValue(typeof(bool), "PerformanceMetricsEnabled");
-            _ReadIgnoreDevices = (string)_configuration.GetValue(typeof(string), "IgnoreDevices");
-            _IgnoreDevices = _ReadIgnoreDevices.Split(",");
-            int counter = 0;
-            foreach (var word in _IgnoreDevices)
-            {
-                if (_IgnoreDevices[counter].Substring(0,1) ==" ")
-                {
-                    _IgnoreDevices[counter] = _IgnoreDevices[counter].Substring(1);
-                }
-                counter++;
-            }
-
             _performanceMetricsStopwatch = new Stopwatch();
+            _ignoredDevices = _configuration.GetSection("IgnoredDevices").Get<string[]>();
         }
 
         /// <summary>
@@ -97,24 +87,13 @@ namespace AuraConnect
 
             _api.Init(Guid.Parse("e6bef332-95b8-76ec-a6d0-9f402bad244c"));
 
-
             foreach (var deviceProvider in _rgbKit.DeviceProviders)
             {
                 foreach (var device in deviceProvider.Devices)
                 {
-                    bool DeviceIgnore = false;
-                    string divecenamer = string.Empty;
-                    foreach (var ignore in _IgnoreDevices)
+                    if (_ignoredDevices.Contains(device.Name))
                     {
-                        string namedevice = device.Name.ToString();
-                        if (namedevice.Contains(ignore) && DeviceIgnore == false)
-                            DeviceIgnore = true;
-                    }
-
-                    
-                    if (DeviceIgnore)
-                    {
-                        _logger.LogInformation(new EventId(0, "Logging"), $"Found Device: {deviceProvider.Name} - {device.Name} - {device.Lights.Count()} Lights - Ignoring device");
+                        _logger.LogInformation(new EventId(0, "Logging"), $"Found Device: {deviceProvider.Name} - {device.Name} - {device.Lights.Count()} Lights - Ignoring Device");
                     }
                     else
                     {
@@ -154,42 +133,35 @@ namespace AuraConnect
             {
                 foreach (var device in deviceProvider.Devices)
                 {
-                    bool DeviceIgnore = false;
-                    string divecenamer = string.Empty;
-                    foreach (var ignore in _IgnoreDevices)
+                    if (_ignoredDevices.Contains(device.Name))
                     {
-                        string namedevice = device.Name.ToString();
-                        if (namedevice.Contains(ignore) && DeviceIgnore == false)
-                            DeviceIgnore = true;
+                        continue;
                     }
 
-                    if (DeviceIgnore == false)
+                    foreach (var light in device.Lights)
                     {
-                        foreach (var light in device.Lights)
-                        {
-                            light.Color = e.Colors[currentColor];
-                            currentColor++;
+                        light.Color = e.Colors[currentColor];
+                        currentColor++;
 
-                            if (currentColor == e.Colors.Length)
-                                currentColor = 0;
-                        }
+                        if (currentColor == e.Colors.Length)
+                            currentColor = 0;
+                    }
 
-                        if (_performanceMetricsEnabled)
-                        {
-                            _performanceMetricsStopwatch.Reset();
-                            _performanceMetricsStopwatch.Start();
-                        }
+                    if (_performanceMetricsEnabled)
+                    {
+                        _performanceMetricsStopwatch.Reset();
+                        _performanceMetricsStopwatch.Start();
+                    }
 
-                        if (device.Lights.Count() > 0)
-                        {
-                            device.ApplyLights();
-                        }
+                    if (device.Lights.Count() > 0)
+                    {
+                        device.ApplyLights();
+                    }
 
-                        if (_performanceMetricsEnabled)
-                        {
-                            _performanceMetricsStopwatch.Stop();
-                            _logger.LogInformation(new EventId(1, "Metrics"), deviceProvider.Name + " - " + device.Name + ": Took " + _performanceMetricsStopwatch.ElapsedMilliseconds + "ms To Update");
-                        }
+                    if (_performanceMetricsEnabled)
+                    {
+                        _performanceMetricsStopwatch.Stop();
+                        _logger.LogInformation(new EventId(1, "Metrics"), deviceProvider.Name + " - " + device.Name + ": Took " + _performanceMetricsStopwatch.ElapsedMilliseconds + "ms To Update");
                     }
                 }
             }
